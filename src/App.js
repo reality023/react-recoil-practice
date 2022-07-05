@@ -1,38 +1,45 @@
-import { useEffect, useRef, useState } from "react";
-import { atom, useRecoilState } from "recoil";
+import { useRef } from "react";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import styled from "styled-components";
-
-const myList = atom({
-  key: "list",
-  default: [
-    {
-      id: 1,
-      content: "내용1"
-    },
-    {
-      id: 2,
-      content: "내용2"
-    }
-  ],
-});
+import { myList, myListbyCategory, selectedCategory } from "./atoms";
 
 function App() {
   const inputRef = useRef(null);
-  const [list, setList] = useRecoilState(myList);
-  // getter(데이터를 가져오는 역할), setter (데이터를 바꾸는 역할)
-  // useSetRecoilState(atom); => setter
-  // useRecoilValue(atom); => getter
-  // useRecoilState(atom); => [getter, setter]
-  const onClick = (e) => {
+  const selectRef = useRef(null);
+  // const [list, setList] = useRecoilState(myList);
+  const [list, setList] = useRecoilState(myListbyCategory);
+  const [selected, setSelected] = useRecoilState(selectedCategory);
 
+  const onClick = (e) => {
+    const content = inputRef.current.value;
+    // setList((current) => { // 불변성
+    //   return [...current, { id: Date.now(), content }];
+    // });
+    setList({ id: 1, content, category: selected });
   }
+
+  const remove = (id) => {
+    setList((current) => {
+      return current.filter((v) => v.id !== id);
+    });
+  }
+
+  const onChange = (e) => {
+    setSelected(selectRef.current.value);
+  }
+
   return (
     <Container>
+      <select ref={selectRef} onChange={onChange}>
+        <option value="cate-1">카테고리1</option>
+        <option value="cate-2">카테고리2</option>
+      </select>
       {
-        list.map((value) => {
+        list.map((value, idx) => {
           return (
-            <List>
+            <List key={idx}>
               <div>{value.content}</div>
+              <button onClick={(event) => { remove(value.id) }}>삭제</button>
             </List>
           )
         })
